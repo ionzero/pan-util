@@ -17,10 +17,10 @@ const JSON_FRAME_PREFIX_LENGTH = 4;
 
 const ROUTING_ENVELOPE_SIZE = 88;
 
-const MAJOR_BINARY = 0x01;
-const MINOR_BINARY = 0x00;
-const MAJOR_JSON = 0x7B;
-const MINOR_JSON = 0x00;
+export const PAN_ENCODING_MAJOR_BINARY = 0x01;
+export const PAN_ENCODING_MINOR_BINARY = 0x00;
+export const PAN_ENCODING_MAJOR_JSON = 0x7B;
+export const PAN_ENCODING_MINOR_JSON = 0x00;
 
 const PACKET_TYPES = {
     'control': 0x00,
@@ -81,11 +81,11 @@ export function bytesToUuid(bytes) {
 export function encodePacket(packet, options = {}) {
     const major = packet.version?.major;
 
-    if (major === MAJOR_BINARY) {
+    if (major === PAN_ENCODING_MAJOR_BINARY) {
         return encodeV1Packet(packet);
     }
 
-    if (major === MAJOR_JSON) {
+    if (major === PAN_ENCODING_MAJOR_JSON) {
         return encodeV7BPacket(packet);
     }
 
@@ -96,11 +96,11 @@ export function decodePacket(buffer) {
     const bytes = toUint8Array(buffer);
     const major = bytes[0];
 
-    if (major === MAJOR_BINARY) {
+    if (major === PAN_ENCODING_MAJOR_BINARY) {
         return decodeV1Packet(bytes);
     }
 
-    if (major === MAJOR_JSON) {
+    if (major === PAN_ENCODING_MAJOR_JSON) {
         return decodeV7BPacket(bytes);
     }
 
@@ -127,7 +127,7 @@ function encodeV1Packet(pkt) {
     const buffer = new Uint8Array(totalLength);
     const view = new DataView(buffer.buffer);
 
-    buffer[0] = MAJOR_BINARY;
+    buffer[0] = PAN_ENCODING_MAJOR_BINARY;
     buffer[1] = pkt.version.minor ?? 0;
     view.setUint16(2, totalLength, false); // network byte order
     buffer[4] = pkt.spread ?? 0;
@@ -165,7 +165,7 @@ function decodeV1Packet(bytes) {
     const payload = bytes.slice(ROUTING_ENVELOPE_SIZE);
 
     const new_pkt = {
-        version: { major: MAJOR_BINARY, minor: bytes[1] },
+        version: { major: PAN_ENCODING_MAJOR_BINARY, minor: bytes[1] },
         spread: bytes[4],
         ttl: bytes[5],
         type: PACKET_TYPES[bytes[6]],
@@ -263,8 +263,8 @@ function encodeV7BPacket(pkt) {
     const buffer = new Uint8Array(totalLength);
     const view = new DataView(buffer.buffer);
 
-    buffer[0] = MAJOR_JSON;
-    buffer[1] = MINOR_JSON;
+    buffer[0] = PAN_ENCODING_MAJOR_JSON;
+    buffer[1] = PAN_ENCODING_MINOR_JSON;
     // we'll need to figure out our sizes first.
     view.setUint16(2, totalLength, false); // network byte order
     view.setUint16(4, header.length, false);
@@ -328,7 +328,7 @@ function decodeV7BPacket(buffer) {
     const major = buffer[0];
     const minor = buffer[1];
 
-    if (major !== MAJOR_JSON || minor !== MINOR_JSON) {
+    if (major !== PAN_ENCODING_MAJOR_JSON || minor !== PAN_ENCODING_MINOR_JSON) {
         throw new Error(`Unsupported JSON packet version ${major}.${minor}`);
     }
 
