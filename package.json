@@ -1,0 +1,30 @@
+{
+  "name": "pan-util",
+  "version": "3.0.0",
+  "description": "PAN p2p app system utility routines",
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  },
+  "keywords": [
+    "PAN",
+    "peer-to-peer",
+    "agent",
+    "network",
+    "decentralized"
+  ],
+  "author": "Jay Kuri",
+  "license": "BSD-3-Clause",
+  "engines": {
+    "node": ">=16"
+  },
+  "optionalDependencies": {
+    "ws": "^8.0.0"
+  },
+  "files": [
+    "index.js"
+  ],
+  "dependencies": {
+    "uuid": "^13.0.0"
+  }
+}
