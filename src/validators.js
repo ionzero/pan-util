@@ -193,5 +193,6 @@ export default {
     validateMessageToAgent,
     validateMessageFromSpecialAgent,
     validateMessageToSpecialAgent,
-    validateIncomingNodeMessage
+    validateIncomingNodeMessage,
+    validateRequiredFieldsByType
 };

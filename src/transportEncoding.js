@@ -9,7 +9,7 @@
  * This module is environment-neutral (Node + browser).
  */
 import { NULL_ID, MAX_JSON_ENVELOPE_SIZE, MAX_PAYLOAD_SIZE } from './constants.js';
-import { validateMessageFromAgent, validateMessageToAgent } from './validators.js';
+import { validateRequiredFieldsByType, validateMessageFromAgent, validateMessageToAgent } from './validators.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const FRAME_PREFIX_LENGTH = 4;
@@ -22,7 +22,7 @@ export const PAN_ENCODING_MINOR_BINARY = 0x00;
 export const PAN_ENCODING_MAJOR_JSON = 0x7B;
 export const PAN_ENCODING_MINOR_JSON = 0x00;
 
-const PACKET_TYPES = {
+export const PAN_PACKET_TYPES = {
     'control': 0x00,
     'directed': 0x01,
     'broadcast': 0x02,
@@ -168,7 +168,7 @@ function decodeV1Packet(bytes) {
         version: { major: PAN_ENCODING_MAJOR_BINARY, minor: bytes[1] },
         spread: bytes[4],
         ttl: bytes[5],
-        type: PACKET_TYPES[bytes[6]],
+        type: PAN_PACKET_TYPES[bytes[6]],
         flags: bytes[7],
         from: {
             node_id: bytesToUuid(bytes.slice(8, 24)),
@@ -245,7 +245,7 @@ function encodeV7BPacket(pkt) {
 
     // Normalize numeric packet types to string form if needed
     if (typeof pkt.type === 'number') {
-        pkt_header.type = PACKET_TYPES[pkt.type];
+        pkt_header.type = PAN_PACKET_TYPES[pkt.type];
     }
 
     if (!validateRequiredFieldsByType(pkt_header, pkt.payload, false)) {
