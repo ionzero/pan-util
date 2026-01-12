@@ -22,7 +22,11 @@
     "ws": "^8.0.0"
   },
   "files": [
-    "index.js"
+    "index.js",
+    "src/validators.js",
+    "src/transportEncoding.js",
+    "src/constants.js",
+    "README.md"
   ],
   "dependencies": {
     "uuid": "^13.0.0"
