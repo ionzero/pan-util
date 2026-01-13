@@ -37,14 +37,17 @@ export function isFastUuid(str) {
 // This is meant to do a basic validation on a packet and fail
 // as quickly as possible with as little overhead as possible.
 export function isValidBaseFields(msg, { fromAgent = false } = {}) {
+    console.log('dddd', msg);
     FORCE_DEBUGGING && console.log('msg check');
     if (typeof msg !== 'object' || msg === null) return false;
     FORCE_DEBUGGING && console.log('msg_id check');
-    if (typeof msg.msg_id !== 'string' || !isFastUuid(msg.msg_id)) return false;
+    console.log('eee', msg.msg_id);
+    if (!isFastUuid(msg.msg_id)) return false;
+    console.log('fff');
     FORCE_DEBUGGING && console.log('msg from object check');
     if (typeof msg.from !== 'object' || msg.from === null) return false;
     FORCE_DEBUGGING && console.log('msg from node_id check');
-    if (typeof msg.from.node_id !== 'string' || !isFastUuid(msg.from.node_id)) return false;
+    if (!isFastUuid(msg.from.node_id)) return false;
     FORCE_DEBUGGING && console.log('msg from conn_id check');
     if (typeof msg.from.conn_id !== 'string') return false;
 

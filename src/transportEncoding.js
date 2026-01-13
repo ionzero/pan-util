@@ -13,7 +13,7 @@ import { validateRequiredFieldsByType, validateMessageFromAgent, validateMessage
 import { v4 as uuidv4 } from 'uuid';
 
 const FRAME_PREFIX_LENGTH = 4;
-const JSON_FRAME_PREFIX_LENGTH = 4;
+const JSON_FRAME_PREFIX_LENGTH = 6;
 
 const ROUTING_ENVELOPE_SIZE = 88;
 
@@ -135,12 +135,13 @@ function encodeV1Packet(pkt) {
     buffer[6] = pkt.type;
     buffer[7] = pkt.flags ?? 0;
 
+    let msg_id = pkt.msg_id || uuidv4();
 
     buffer.set(uuidToBytes(pkt.from.node_id), 8);
     buffer.set(uuidToBytes(pkt.from.conn_id), 24);
     buffer.set(uuidToBytes(pkt.to.id), 40);
     buffer.set(uuidToBytes(pkt.to.sub_id), 56);
-    buffer.set(uuidToBytes(pkt.message_id), 72);
+    buffer.set(uuidToBytes(msg_id), 72);
 
     buffer.set(pkt.payload, ROUTING_ENVELOPE_SIZE);
 
@@ -174,7 +175,7 @@ function decodeV1Packet(bytes) {
             node_id: bytesToUuid(bytes.slice(8, 24)),
             conn_id: bytesToUuid(bytes.slice(24, 40))
         },
-        message_id: bytesToUuid(bytes.slice(72, 88)),
+        msg_id: bytesToUuid(bytes.slice(72, 88)),
         payload
     };
     let destination = {
@@ -240,7 +241,7 @@ function encodeV7BPacket(pkt) {
         flags: pkt.flags ?? 0,
         from: pkt.from,
         to: pkt.to,
-        message_id: pkt.message_id ?? uuidv4()
+        msg_id: pkt.msg_id ?? uuidv4()
     };
 
     // Normalize numeric packet types to string form if needed
@@ -265,11 +266,24 @@ function encodeV7BPacket(pkt) {
 
     buffer[0] = PAN_ENCODING_MAJOR_JSON;
     buffer[1] = PAN_ENCODING_MINOR_JSON;
+
+    console.log('total length', totalLength);
+    console.log('header length', header.length);
+
     // we'll need to figure out our sizes first.
     view.setUint16(2, totalLength, false); // network byte order
     view.setUint16(4, header.length, false);
+
+    let val = view.getUint16(4);
+    console.log('packet header length', val);
+
     buffer.set(header, JSON_FRAME_PREFIX_LENGTH);
     buffer.set(payload_data,  JSON_FRAME_PREFIX_LENGTH + header.length);
+
+    console.log("----", JSON.stringify(pkt.payload));
+    console.log("----", payload_data);
+    let val2 = view.getUint16(4);
+    console.log(' 2 packet header length', val2);
 
     return buffer;
 }
@@ -324,6 +338,8 @@ function decodeV7BPacket(buffer) {
     }
 
     const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+    console.log('offset:', buffer.byteOffset);
+    console.log('length:', buffer.byteLength);
 
     const major = buffer[0];
     const minor = buffer[1];
@@ -339,6 +355,9 @@ function decodeV7BPacket(buffer) {
     }
 
     const headerLength = view.getUint16(4, false);
+
+    console.log('packet length', packetLength);
+    console.log('header length', headerLength);
 
     if (headerLength <= 0 || headerLength > MAX_JSON_ENVELOPE_SIZE) {
         throw new Error('Invalid JSON header length');
