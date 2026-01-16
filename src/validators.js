@@ -13,8 +13,6 @@
 // - If invalid, immediately close the connection.
 import constants from './constants.js';
 
-const VALID_MSG_TYPE = /^[\w\-.@]+$/u;
-
 const MAX_TTL = 255;
 const MIN_TTL = 0;
 
@@ -50,13 +48,6 @@ export function isValidBaseFields(msg, { fromAgent = false } = {}) {
     if (!isFastUuid(msg.from.node_id)) return false;
     FORCE_DEBUGGING && console.log('msg from conn_id check');
     if (typeof msg.from.conn_id !== 'string') return false;
-
-/*  
-    FORCE_DEBUGGING && console.log('msg from msg_type check');
-    if (typeof msg.msg_type !== 'string' || msg.msg_type.length > 64 || !VALID_MSG_TYPE.test(msg.msg_type)) return false;
-    FORCE_DEBUGGING && console.log('msg payload check');
-    if (typeof msg.payload !== 'object' || msg.payload === null) return false;
-*/
 
     FORCE_DEBUGGING && console.log('msg ttl check');
     const ttl = Number(msg.ttl);

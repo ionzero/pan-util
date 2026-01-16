@@ -275,23 +275,16 @@ function encodeV7BPacket(pkt) {
     buffer[0] = PAN_ENCODING_MAJOR_JSON;
     buffer[1] = PAN_ENCODING_MINOR_JSON;
 
-    console.log('total length', totalLength);
-    console.log('header length', header.length);
-
     // we'll need to figure out our sizes first.
     view.setUint16(2, totalLength, false); // network byte order
     view.setUint16(4, header.length, false);
 
     let val = view.getUint16(4);
-    console.log('packet header length', val);
 
     buffer.set(header, JSON_FRAME_PREFIX_LENGTH);
     buffer.set(payload_data,  JSON_FRAME_PREFIX_LENGTH + header.length);
 
-    console.log("----", JSON.stringify(pkt.payload));
-    console.log("----", payload_data);
     let val2 = view.getUint16(4);
-    console.log(' 2 packet header length', val2);
 
     return buffer;
 }
