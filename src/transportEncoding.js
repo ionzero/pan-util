@@ -19,8 +19,16 @@ const ROUTING_ENVELOPE_SIZE = 88;
 
 export const PAN_ENCODING_MAJOR_BINARY = 0x01;
 export const PAN_ENCODING_MINOR_BINARY = 0x00;
+export const PAN_ENCODING_BINARY = {
+    major: PAN_ENCODING_MAJOR_BINARY,
+    minor: PAN_ENCODING_MINOR_BINARY
+};
 export const PAN_ENCODING_MAJOR_JSON = 0x7B;
 export const PAN_ENCODING_MINOR_JSON = 0x00;
+export const PAN_ENCODING_JSON = {
+    major: PAN_ENCODING_MAJOR_JSON,
+    minor: PAN_ENCODING_MINOR_JSON
+};
 
 export const PAN_PACKET_TYPES = {
     'control': 0x00,
