@@ -19,7 +19,7 @@ const MIN_TTL = 0;
 const MAX_AGENT_TTL = 1;
 const MIN_AGENT_TTL = 0;
 
-const FORCE_DEBUGGING = true;
+const FORCE_DEBUGGING = false;
 
 // Ultra-fast "looks like a UUID" checker
 export function isFastUuid(str) {
@@ -35,13 +35,10 @@ export function isFastUuid(str) {
 // This is meant to do a basic validation on a packet and fail
 // as quickly as possible with as little overhead as possible.
 export function isValidBaseFields(msg, { fromAgent = false } = {}) {
-    console.log('dddd', msg);
     FORCE_DEBUGGING && console.log('msg check');
     if (typeof msg !== 'object' || msg === null) return false;
     FORCE_DEBUGGING && console.log('msg_id check');
-    console.log('eee', msg.msg_id);
     if (!isFastUuid(msg.msg_id)) return false;
-    console.log('fff');
     FORCE_DEBUGGING && console.log('msg from object check');
     if (typeof msg.from !== 'object' || msg.from === null) return false;
     FORCE_DEBUGGING && console.log('msg from node_id check');
@@ -83,9 +80,7 @@ export function validateRequiredFieldsByType(msg, payload, fromAgent) {
         case 'control':
             if (!msg.to || !isFastUuid(msg.to.node_id)) return false;
             if (!isFastUuid(msg.to.conn_id)) return false;
-            console.log("control test", msg);
             if (!payload) return false;
-            console.log("looks good");
             return true; 
 
         default:
@@ -95,7 +90,6 @@ export function validateRequiredFieldsByType(msg, payload, fromAgent) {
 
 // --- Agent-specific validation ---
 export function validateAgentMessage(msg) {
-    console.log("type check", msg.type);
     if (!constants.VALID_AGENT_MESSAGE_TYPES.includes(msg.type)) return false;
 
     switch (msg.type) {
@@ -110,9 +104,7 @@ export function validateAgentMessage(msg) {
             return true;
 
         case 'control':
-            console.log("control test", msg);
             if (!msg.payload) return false;
-            console.log("looks good");
             return true; 
 
         default:
