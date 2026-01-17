@@ -339,8 +339,8 @@ function decodeV7BPacket(buffer) {
     }
 
     const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-    console.log('offset:', buffer.byteOffset);
-    console.log('length:', buffer.byteLength);
+    //console.log('offset:', buffer.byteOffset);
+    //console.log('length:', buffer.byteLength);
 
     const major = buffer[0];
     const minor = buffer[1];
@@ -357,8 +357,8 @@ function decodeV7BPacket(buffer) {
 
     const headerLength = view.getUint16(4, false);
 
-    console.log('packet length', packetLength);
-    console.log('header length', headerLength);
+    //console.log('packet length', packetLength);
+    //console.log('header length', headerLength);
 
     if (headerLength <= 0 || headerLength > MAX_JSON_ENVELOPE_SIZE) {
         throw new Error('Invalid JSON header length');
