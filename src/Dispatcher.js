@@ -10,78 +10,136 @@
  * - Listener set is snapshotted per emit
  */
 
-export class Dispatcher {
-    constructor() {
-        // Map<event, Set<handler>>
-        this._handlers = new Map();
+const DISPATCH_METHODS = [
+    'on',
+    'once',
+    'off',
+    'emit',
+    'waitFor'
+];
+
+export function attachDispatcher(target) {
+    if (target === null || typeof target !== 'object') {
+        throw new TypeError('attachDispatcher target must be an object');
     }
 
-    _get(event) {
-        let set = this._handlers.get(event);
+    for (const name of DISPATCH_METHODS) {
+        if (Object.prototype.hasOwnProperty.call(target, name)) {
+            throw new Error(
+                `attachDispatcher conflict: target already has property "${name}"`
+            );
+        }
+    }
+
+    const handlers = new Map();
+
+    function get(event) {
+        let set = handlers.get(event);
         if (!set) {
             set = new Set();
-            this._handlers.set(event, set);
+            handlers.set(event, set);
         }
         return set;
     }
 
-    on(event, fn) {
+    target.on = function (event, fn) {
         if (typeof fn !== 'function') {
             throw new TypeError('handler must be a function');
         }
-        this._get(event).add(fn);
-        return this;
-    }
+        get(event).add(fn);
+        return target;
+    };
 
-    once(event, fn) {
+    target.once = function (event, fn) {
         if (typeof fn !== 'function') {
             throw new TypeError('handler must be a function');
         }
 
         const wrapper = (...args) => {
-            this.off(event, wrapper);
+            target.off(event, wrapper);
             fn(...args);
         };
 
-        this._get(event).add(wrapper);
-        return this;
-    }
+        get(event).add(wrapper);
+        return target;
+    };
 
-    off(event, fn) {
-        const set = this._handlers.get(event);
+    target.off = function (event, fn) {
+        const set = handlers.get(event);
         if (!set) {
-            return this;
+            return target;
         }
 
         set.delete(fn);
 
         if (set.size === 0) {
-            this._handlers.delete(event);
+            handlers.delete(event);
         }
 
-        return this;
-    }
+        return target;
+    };
 
-    emit(event, ...args) {
-        const set = this._handlers.get(event);
+    target.emit = function (event, ...args) {
+        const set = handlers.get(event);
         if (!set || set.size === 0) {
             return false;
         }
 
-        // Snapshot handlers at emit time
-        const handlers = Array.from(set);
+        const snapshot = Array.from(set);
 
-        for (const fn of handlers) {
+        for (const fn of snapshot) {
             setTimeout(() => {
                 try {
                     fn(...args);
                 } catch (err) {
-                    // Fault isolation only; no policy
                     console.warn(`Dispatch handler error for "${event}"`, err);
                 }
             }, 0);
         }
 
         return true;
-    }
+    };
+
+    target.waitFor = function (event, { timeout, match } = {}) {
+        return new Promise((resolve, reject) => {
+            let timer = null;
+
+            const handler = (...args) => {
+                try {
+                    if (typeof match === 'function' && match(args) !== true) {
+                        return;
+                    }
+                } catch (err) {
+                    cleanup();
+                    reject(err);
+                    return;
+                }
+
+                cleanup();
+                resolve(args);
+            };
+
+            const cleanup = () => {
+                target.off(event, handler);
+                if (timer !== null) {
+                    clearTimeout(timer);
+                }
+            };
+
+            target.on(event, handler);
+
+            if (typeof timeout === 'number') {
+                timer = setTimeout(() => {
+                    cleanup();
+                    reject(new Error(`Timeout waiting for "${event}"`));
+                }, timeout);
+            }
+        });
+    };
+
+    return target;
 }
+
+export default {
+    attachDispatcher
+};
