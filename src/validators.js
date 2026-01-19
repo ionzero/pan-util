@@ -16,9 +16,6 @@ import constants from './constants.js';
 const MAX_TTL = 255;
 const MIN_TTL = 0;
 
-const MAX_AGENT_TTL = 1;
-const MIN_AGENT_TTL = 0;
-
 let FORCE_DEBUGGING = false;
 
 if (process.env.PAN_DEBUG) {
@@ -52,9 +49,9 @@ export function isValidBaseFields(msg, { fromAgent = false } = {}) {
 
     FORCE_DEBUGGING && console.log('msg ttl check');
     const ttl = Number(msg.ttl);
-    const minTtl = fromAgent ? MIN_AGENT_TTL : MIN_TTL;
-    const maxTtl = fromAgent ? MAX_AGENT_TTL : MAX_TTL;
-    if (!Number.isInteger(ttl) || ttl < minTtl || ttl > maxTtl) return false;
+    if (!Number.isInteger(ttl) || ttl < MIN_TTL || ttl > MAX_TTL) return false;
+    // control messages from agents should never have a ttl greater than 1.
+    if (fromAgent && msg.type == 'control' && ttl > 1) return false;
 
     FORCE_DEBUGGING && console.log('ran the gauntlet');
     return true;
