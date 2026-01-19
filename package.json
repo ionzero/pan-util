@@ -26,7 +26,6 @@
     "src/validators.js",
     "src/transportEncoding.js",
     "src/constants.js",
-    "src/Dispatcher.js",
     "README.md"
   ],
   "dependencies": {

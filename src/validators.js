@@ -18,9 +18,9 @@ const MIN_TTL = 0;
 
 let FORCE_DEBUGGING = false;
 
-if (process.env.PAN_DEBUG) {
-    FORCE_DEBUGGING = true;
-} 
+export function enableValidationDebugging(true_or_false) {
+    FORCE_DEBUGGING = true_or_false;
+}
 
 // Ultra-fast "looks like a UUID" checker
 export function isFastUuid(str) {
@@ -181,5 +181,6 @@ export default {
     validateMessageFromSpecialAgent,
     validateMessageToSpecialAgent,
     validateIncomingNodeMessage,
-    validateRequiredFieldsByType
+    validateRequiredFieldsByType,
+    enableValidationDebugging
 };
