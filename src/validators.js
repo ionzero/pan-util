@@ -64,7 +64,7 @@ export function validateRequiredFieldsByType(msg, payload, fromAgent) {
         return false;
     }
 
-    console.log("type check", msg.type);
+    FORCE_DEBUGGING && console.log("type check", msg.type);
     if (!constants.VALID_AGENT_MESSAGE_TYPES.includes(msg.type)) return false;
 
     switch (msg.type) {
