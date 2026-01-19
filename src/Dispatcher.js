@@ -100,14 +100,31 @@ export function attachDispatcher(target) {
         return true;
     };
 
-    target.waitFor = function (event, { timeout, match } = {}) {
+    target.waitFor = function (events, { timeout, match } = {}) {
+        const eventList = Array.isArray(events) ? events : [events];
+
         return new Promise((resolve, reject) => {
             let timer = null;
+            const handlers = new Map();
 
-            const handler = (...args) => {
+            const cleanup = () => {
+                for (const [event, fn] of handlers) {
+                    target.off(event, fn);
+                }
+                handlers.clear();
+
+                if (timer !== null) {
+                    clearTimeout(timer);
+                }
+            };
+
+            const makeHandler = (event) => (...args) => {
+                const data = args.length === 1 ? args[0] : args;
+                const payload = { event, data };
+
                 try {
-                    if (typeof match === 'function' && match(args) !== true) {
-                        return;
+                    if (typeof match === 'function' && match(payload) !== true) {
+                        return; // keep waiting
                     }
                 } catch (err) {
                     cleanup();
@@ -116,26 +133,27 @@ export function attachDispatcher(target) {
                 }
 
                 cleanup();
-                resolve(args);
+                resolve(payload);
             };
 
-            const cleanup = () => {
-                target.off(event, handler);
-                if (timer !== null) {
-                    clearTimeout(timer);
-                }
-            };
-
-            target.on(event, handler);
+            for (const event of eventList) {
+                const fn = makeHandler(event);
+                handlers.set(event, fn);
+                target.on(event, fn);
+            }
 
             if (typeof timeout === 'number') {
                 timer = setTimeout(() => {
                     cleanup();
-                    reject(new Error(`Timeout waiting for "${event}"`));
+                    reject(
+                        new Error(`Timeout waiting for ${eventList.join(', ')}`)
+                    );
                 }, timeout);
             }
         });
     };
+
+
 
     return target;
 }
