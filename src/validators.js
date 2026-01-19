@@ -19,7 +19,11 @@ const MIN_TTL = 0;
 const MAX_AGENT_TTL = 1;
 const MIN_AGENT_TTL = 0;
 
-const FORCE_DEBUGGING = false;
+let FORCE_DEBUGGING = false;
+
+if (process.env.PAN_DEBUG) {
+    FORCE_DEBUGGING = true;
+} 
 
 // Ultra-fast "looks like a UUID" checker
 export function isFastUuid(str) {
